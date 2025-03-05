@@ -1,0 +1,46 @@
+name: Vérification & Déploiement HTML
+
+on:
+  push:
+    branches:
+      - main  # Exécution du workflow à chaque push sur main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write  # Permissions pour GitHub Pages
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Exécution sur une machine Ubuntu
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4  # Télécharge le code du dépôt (version mise à jour)
+
+      - name: Vérifier l'existence de index.html
+        run: |
+          if [ -f index.html ]; then
+            echo "index.html trouvé."
+          else
+            echo " ERREUR : index.html est manquant !" && exit 1
+          fi
+
+      - name: Vérifier si index.html contient un titre
+        run: |
+          if grep -q "<title>" index.html; then
+            echo " Le fichier index.html contient un titre."
+          else
+            echo " ERREUR : Le fichier index.html n'a pas de titre !" && exit 1
+          fi
+
+      - name: Initialiser GitHub Pages
+        uses: actions/configure-pages@v4  # Configure GitHub Pages (version mise à jour)
+
+      - name: Télécharger les fichiers pour le déploiement
+        uses: actions/upload-pages-artifact@v3  # Version mise à jour
+        with:
+          path: .  # Prend tous les fichiers du dépôt pour les envoyer sur GitHub Pages
+
+      - name: Déployer sur GitHub Pages
+        uses: actions/deploy-pages@v4  # Déploie les fichiers sur GitHub Pages (version mise à jour)
